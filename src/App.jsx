@@ -194,6 +194,7 @@ export default function App() {
       "...",
       "...",
       "Loading love_letter.txt...",
+      "",
       "Hola mi Polita hermosa. Hoy estás igual de hermosa que siempre. {{flower awkard}}",
       "Te hice esta consola porque estaba pensando en ti y me di cuenta que te amo desde el fondo de mi corazón. Eres la mujer más hermosa, increíble y maravillosa que he conocido. Y entonces me di cuenta que quería hacerte algo especial para ti, nada más y nada menos que para hacerte una simple pregunta...",
       "......",
