@@ -88,7 +88,7 @@ const parseLineWithImages = (lineData) => {
       const imgIdx = parseInt(match[1]);
       const image = lineData.images.find(img => img.idx === imgIdx);
       if (image) {
-        return <img key={idx} src={image.src} alt="cat" style={{ height: '5em', width: 'auto', verticalAlign: 'middle', margin: '0 4px', borderRadius: '4px' }} />;
+        return <img key={idx} src={image.src} alt="cat" style={{ height: '5em', maxHeight: '80px', width: 'auto', maxWidth: '100%', verticalAlign: 'middle', margin: '0 4px', borderRadius: '4px' }} />;
       }
     }
     return part;
@@ -426,20 +426,25 @@ const styles = {
     minHeight: "100vh",
     display: "grid",
     placeItems: "center",
-    padding: 20,
+    padding: "10px",
     background: "radial-gradient(1200px 600px at 50% 20%, #1b1f2a 0%, #0b0e14 60%, #07090e 100%)",
     color: "#e6e6e6",
     fontFamily:
       "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+    boxSizing: "border-box",
+    width: "100%",
+    overflow: "hidden",
   },
   card: {
-    width: "min(900px, 96vw)",
+    width: "min(900px, calc(100vw - 20px))",
+    maxWidth: "100%",
     borderRadius: 16,
     overflow: "hidden",
     boxShadow: "0 20px 80px rgba(0,0,0,0.55)",
     border: "1px solid rgba(255,255,255,0.08)",
     background: "rgba(10,12,18,0.9)",
     backdropFilter: "blur(10px)",
+    boxSizing: "border-box",
   },
   header: {
     display: "flex",
@@ -448,10 +453,11 @@ const styles = {
     padding: "10px 12px",
     borderBottom: "1px solid rgba(255,255,255,0.08)",
     background: "rgba(255,255,255,0.03)",
+    flexWrap: "wrap",
   },
   dots: { display: "flex", gap: 8 },
   dot: { width: 10, height: 10, borderRadius: 999 },
-  title: { fontSize: 13, opacity: 0.9, flex: 1, textAlign: "center" },
+  title: { fontSize: 13, opacity: 0.9, flex: 1, textAlign: "center", minWidth: 0 },
   skipBtn: {
     border: "1px solid rgba(255,255,255,0.15)",
     background: "rgba(255,255,255,0.04)",
@@ -470,16 +476,19 @@ const styles = {
     cursor: "pointer",
   },
   terminal: {
-    padding: 16,
+    padding: "12px",
     height: "min(520px, 62vh)",
     overflow: "auto",
     background: "linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.55) 100%)",
+    boxSizing: "border-box",
   },
   line: {
     margin: 0,
     whiteSpace: "pre-wrap",
     lineHeight: 1.5,
-    fontSize: 14,
+    fontSize: "clamp(12px, 3.5vw, 14px)",
+    wordBreak: "break-word",
+    overflowWrap: "break-word",
   },
   cursor: {
     display: "inline-block",
@@ -492,15 +501,17 @@ const styles = {
     padding: 14,
     borderTop: "1px solid rgba(255,255,255,0.08)",
     justifyContent: "center",
+    flexWrap: "wrap",
   },
   btn: {
-    minWidth: 160,
+    minWidth: "140px",
     padding: "12px 16px",
     borderRadius: 14,
     border: "1px solid rgba(255,255,255,0.15)",
     cursor: "pointer",
     fontWeight: 700,
     letterSpacing: 0.2,
+    fontSize: "14px",
   },
   btnYes: {
     background: "rgba(255, 70, 140, 0.16)",
@@ -520,22 +531,26 @@ const styles = {
     borderTop: "1px solid rgba(255,255,255,0.08)",
     fontSize: 12,
     opacity: 0.8,
+    flexWrap: "wrap",
+    gap: "8px",
   },
   startupCard: {
-    width: "min(600px, 90vw)",
+    width: "min(600px, calc(100vw - 20px))",
+    maxWidth: "100%",
     borderRadius: 16,
     overflow: "hidden",
     boxShadow: "0 20px 80px rgba(0,0,0,0.55)",
     border: "1px solid rgba(255,255,255,0.08)",
     background: "rgba(10,12,18,0.9)",
     backdropFilter: "blur(10px)",
+    boxSizing: "border-box",
   },
   startupContent: {
-    padding: "60px 40px",
+    padding: "40px 20px",
     textAlign: "center",
   },
   startupTitle: {
-    fontSize: 48,
+    fontSize: "clamp(32px, 8vw, 48px)",
     fontWeight: 700,
     margin: 0,
     marginBottom: 10,
@@ -543,6 +558,7 @@ const styles = {
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
     backgroundClip: "text",
+    wordBreak: "break-word",
   },
   startupSubtitle: {
     fontSize: 18,
@@ -562,8 +578,8 @@ const styles = {
   },
   startupBtn: {
     marginTop: 40,
-    padding: "16px 40px",
-    fontSize: 18,
+    padding: "16px 30px",
+    fontSize: "clamp(16px, 4vw, 18px)",
     fontWeight: 700,
     borderRadius: 14,
     border: "1px solid rgba(255,255,255,0.15)",
@@ -572,6 +588,8 @@ const styles = {
     cursor: "pointer",
     transition: "all 0.3s ease",
     fontFamily: "inherit",
+    width: "auto",
+    maxWidth: "100%",
   },
 };
 
