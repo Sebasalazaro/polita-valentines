@@ -1,20 +1,81 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
+// Import cat images
+import sadCrying from "./assets/images/sad/crying.jfif";
+import sadCryingAss from "./assets/images/sad/crying ass.jfif";
+import sadCryingRiver from "./assets/images/sad/crying river.jfif";
+import sad1 from "./assets/images/sad/sad-1.jfif";
+import funDumb from "./assets/images/fun/dumb.jfif";
+import funLoading from "./assets/images/fun/loading.jfif";
+import funThinking from "./assets/images/fun/thinking.jfif";
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Cat image collections
+const sadCats = [sadCrying, sadCryingAss, sadCryingRiver, sad1];
+const funCats = [funDumb, funLoading, funThinking];
+
+// Get random cat from a category
+const getRandomCat = (category) => {
+  const cats = category === 'sad' ? sadCats : funCats;
+  return cats[Math.floor(Math.random() * cats.length)];
+};
+
+// Process lines and replace image markers with actual image URLs (stable, won't change on re-render)
+const processLinesWithImages = (lines) => {
+  return lines.map(line => {
+    if (!line.includes('{{IMG:')) return { text: line, images: [] };
+    
+    const parts = line.split(/({{IMG:(sad|fun)}})/g);
+    const images = [];
+    const processedParts = parts.map((part, idx) => {
+      const match = part.match(/{{IMG:(sad|fun)}}/);
+      if (match) {
+        const catImg = getRandomCat(match[1]);
+        images.push({ idx, src: catImg });
+        return `{{IMG_${idx}}}`; // stable placeholder
+      }
+      if (part === 'sad' || part === 'fun') return ''; // filter out captured groups
+      return part;
+    });
+    return { text: processedParts.join(''), images };
+  });
+};
+
+// Parse line with pre-selected images
+const parseLineWithImages = (lineData) => {
+  if (!lineData.images || lineData.images.length === 0) {
+    return lineData.text;
+  }
+  
+  const parts = lineData.text.split(/({{IMG_\d+}})/g);
+  return parts.map((part, idx) => {
+    const match = part.match(/{{IMG_(\d+)}}/);
+    if (match) {
+      const imgIdx = parseInt(match[1]);
+      const image = lineData.images.find(img => img.idx === imgIdx);
+      if (image) {
+        return <img key={idx} src={image.src} alt="cat" style={{ height: '5em', width: 'auto', verticalAlign: 'middle', margin: '0 4px', borderRadius: '4px' }} />;
+      }
+    }
+    return part;
+  });
+};
 
 /**
  * A simple typewriter queue:
  * - Feeds lines one by one into "printed"
  * - Each line is typed character-by-character
  */
-function useTerminalTyper({ charDelay = 250 , lineDelay = 8000 } = {}) {
+function useTerminalTyper({ charDelay = 250 , lineDelay = 8000, skipMode = false } = {}) {
   const [printed, setPrinted] = useState([]); // fully printed lines
-  const [activeLine, setActiveLine] = useState(""); // currently typing
+  const [activeLine, setActiveLine] = useState({ text: "", images: [] }); // currently typing
   const queueRef = useRef([]);
   const typingRef = useRef(false);
 
   const enqueueLines = (lines) => {
-    queueRef.current.push(...lines);
+    const processedLines = processLinesWithImages(lines);
+    queueRef.current.push(...processedLines);
     if (!typingRef.current) void run();
   };
 
@@ -22,7 +83,7 @@ function useTerminalTyper({ charDelay = 250 , lineDelay = 8000 } = {}) {
     queueRef.current = [];
     typingRef.current = false;
     setPrinted([]);
-    setActiveLine("");
+    setActiveLine({ text: "", images: [] });
   };
 
   const run = async () => {
@@ -31,24 +92,34 @@ function useTerminalTyper({ charDelay = 250 , lineDelay = 8000 } = {}) {
     while (queueRef.current.length > 0) {
       const next = queueRef.current.shift();
 
-      // small pause between lines
-      if (printed.length > 0 || activeLine) await sleep(lineDelay);
-
-      // type the line
-      setActiveLine("");
-      for (let i = 0; i < next.length; i++) {
-        setActiveLine((prev) => prev + next[i]);
-        // Make dots type slower for suspense effect
-        const delay = next[i] === '.' ? charDelay * 6 : charDelay;
-        await sleep(delay);
+      // small pause between lines (skip if in skip mode)
+      if (!skipMode && (printed.length > 0 || activeLine.text)) {
+        await sleep(lineDelay);
       }
 
-      // Pause at the end of the line for more natural feel
-      await sleep(charDelay * 4);
+      // type the line
+      setActiveLine({ text: "", images: next.images || [] });
+      
+      if (skipMode) {
+        // Instant display in skip mode
+        setPrinted((prev) => [...prev, next]);
+      } else {
+        // Normal typing - type only the text content
+        const textToType = next.text;
+        for (let i = 0; i < textToType.length; i++) {
+          setActiveLine((prev) => ({ ...next, text: prev.text + textToType[i] }));
+          // Make dots type slower for suspense effect
+          const delay = textToType[i] === '.' ? charDelay * 6 : charDelay;
+          await sleep(delay);
+        }
 
-      // commit line to printed
-      setPrinted((prev) => [...prev, next]);
-      setActiveLine("");
+        // Pause at the end of the line for more natural feel
+        await sleep(charDelay * 4);
+
+        // commit line to printed
+        setPrinted((prev) => [...prev, next]);
+        setActiveLine({ text: "", images: [] });
+      }
     }
 
     typingRef.current = false;
@@ -67,11 +138,13 @@ export default function App() {
   const [yesUnlocked, setYesUnlocked] = useState(!disableYesInitially);
   const [choice, setChoice] = useState(null); // "yes" | "no" | null
   const [step, setStep] = useState("intro"); // "intro" | "unlock" | "accepted"
+  const [skipMode, setSkipMode] = useState(false); // persistent skip mode
   const bottomRef = useRef(null);
 
   const { printed, activeLine, enqueueLines, clear } = useTerminalTyper({
     charDelay: 50,
     lineDelay: 400,
+    skipMode,
   });
 
   // Auto-scroll terminal
@@ -81,20 +154,21 @@ export default function App() {
 
   const introLines = useMemo(
     () => [
-      "booting valentineOS v1.4.14...",
-      "checking system mood... ✅ romantic",
+      "booting PolitaOS v1.4.14...",
+      "checking system mood... romantic {{heart}}",
       "initializing terminal...",
       "...",
       "...",
       "...",
-      "Hey my Poli-darling. I hope you are doing well in this beautiful day.",
-      "I wrote you this console because I want to know if....",
-      "...........",
-      "Do you want to be my special valentine this year? 💘",
+      "Loading love_letter.txt...",
+      "Hola mi Polita hermosa. Hoy estás igual de hermosa que siempre. {{flower awkard}}",
+      "Te hice esta consola porque estaba pensando en ti y me di cuenta que te amo desde el fondo de mi corazón. Eres la mujer más hermosa, increíble y maravillosa que he conocido. Y entonces me di cuenta que quería hacerte algo especial para ti, nada más y nada menos que para hacerte una simple pregunta...",
+      "......",
+      "Do you want to be my special valentine this year mailov? {{be my valentine!}}",
       "",
-      "Choose wisely:",
-      " - [Yes] [FATAL: PERMISSION_DENIED_0x403]",
-      " - [No]",
+      "Escoge sabiamente:",
+      " - [Sipi] [FATAL: PERMISSION_DENIED_0x403]",
+      " - [Nopi]",
     ],
     []
   );
@@ -102,14 +176,13 @@ export default function App() {
   const unlockLines = useMemo(
     () => [
       "",
-      "Oh shoot... lemme try something. I'm new to this Linux stuff.",
+      "Ok veamos... voy a intentar a las malas. Perdóname pero es que soy nuevo en linux. {{dumb}}",
       "chmod 400: love_letter.txt",
-      "chmod 600: my_heart.dat",
       "sudo --askpass \"will you be my valentine?\"",
       "auth success ✅",
       "permission updated: [Yes] is now enabled.",
       "",
-      "Okay... try again 😌",
+      "Yattaaaa! ya puedes volver a intentar jejeje {{Yipeee}}",
     ],
     []
   );
@@ -117,15 +190,16 @@ export default function App() {
   const acceptedLines = useMemo(
     () => [
       "",
-      "✅ input received: YES",
-      "compiling butterflies... done.",
-      "deploying hugs... done.",
+      "Input received: YES",
+      "compiling sillyness... done.",
+      "deploying cuddles... done.",
       "shipping kisses... done.",
       "",
-      "You just made me the happiest person alive.",
-      "I love you. Happy Valentine’s Day 💖",
-      "",
-      "P.S. screenshot this page so we can laugh later 😄",
+      "Me has hecho el hombre más feliz del mundo! {{heartie}}",
+      "Te amo mucho Polita. Feliz día de San Valentín! {{valentine}}",
+      "Quedas cordialmente invitada a una cena conmigo el día de hoy, donde te prometo que disfrutaremos mucho del romance y de nuestro amor. {{love}}",
+      "......",
+      "Espero que hayas disfrutado tu PolitaOS terminal."
     ],
     []
   );
@@ -151,14 +225,30 @@ export default function App() {
     setNoClicks((n) => {
       const next = n + 1;
 
+      // Progressive messages for each attempt
+      const progressiveMessages = [
+        "recalculating... maybe you misclicked? {{IMG:sad}}",
+        "hmm... let me check the manual real quick... {{IMG:fun}}",
+        "trying editing permissions... nope, still locked {{IMG:sad}}",
+        "maybe if I restart the system? {{IMG:fun}}",
+        "checking Stack Overflow for solutions... {{IMG:fun}}",
+        "does turning it off and on again work? {{IMG:sad}}",
+        "deploying emergency heart protocols... {{IMG:fun}}",
+        "accessing backup romantic plans... {{IMG:sad}}",
+        "okay I'm getting creative now... {{IMG:fun}}",
+        "alright, time for admin privileges... {{IMG:sad}}",
+      ];
+
+      const message = progressiveMessages[next - 1] || progressiveMessages[progressiveMessages.length - 1];
+
       // Print a snarky line each time
       enqueueLines([
         "",
         "",
-        `> girlfriend_input: "No"`,
+        `> polita_input: "No"`,
         `hmm... attempt ${next}/${NO_CLICKS_TO_UNLOCK}`,
         next < NO_CLICKS_TO_UNLOCK
-          ? "recalculating... maybe you misclicked? 👀"
+          ? message
           : "okay okay, enough. escalating privileges...",
       ]);
 
@@ -182,8 +272,13 @@ export default function App() {
     setChoice(null);
     setStep("intro");
     setYesUnlocked(!disableYesInitially);
+    setSkipMode(false); // reset skip mode on restart
     clear();
     enqueueLines(introLines);
+  };
+
+  const toggleSkip = () => {
+    setSkipMode(prev => !prev);
   };
 
   return (
@@ -196,6 +291,16 @@ export default function App() {
             <span style={{ ...styles.dot, background: "#27c93f" }} />
           </div>
           <div style={styles.title}>polita-terminal</div>
+          <button 
+            onClick={toggleSkip} 
+            style={{
+              ...styles.skipBtn,
+              background: skipMode ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.04)"
+            }} 
+            title={skipMode ? "Skip mode ON" : "Skip mode OFF"}
+          >
+            {skipMode ? "⏩" : "▶️"}
+          </button>
           <button onClick={reset} style={styles.resetBtn} title="Restart">
             ↻
           </button>
@@ -204,12 +309,12 @@ export default function App() {
         <div style={styles.terminal} aria-label="terminal">
           {printed.map((line, idx) => (
             <pre key={idx} style={styles.line}>
-              {line}
+              {parseLineWithImages(line)}
             </pre>
           ))}
-          {activeLine ? (
+          {activeLine.text || activeLine.images?.length > 0 ? (
             <pre style={styles.line}>
-              {activeLine}
+              {parseLineWithImages(activeLine)}
               <span style={styles.cursor}>█</span>
             </pre>
           ) : (
@@ -280,6 +385,15 @@ const styles = {
   dots: { display: "flex", gap: 8 },
   dot: { width: 10, height: 10, borderRadius: 999 },
   title: { fontSize: 13, opacity: 0.9, flex: 1, textAlign: "center" },
+  skipBtn: {
+    border: "1px solid rgba(255,255,255,0.15)",
+    background: "rgba(255,255,255,0.04)",
+    color: "#e6e6e6",
+    borderRadius: 10,
+    padding: "6px 10px",
+    cursor: "pointer",
+    marginRight: 8,
+  },
   resetBtn: {
     border: "1px solid rgba(255,255,255,0.15)",
     background: "rgba(255,255,255,0.04)",
