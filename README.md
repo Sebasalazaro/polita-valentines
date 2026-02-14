@@ -16,7 +16,15 @@ An interactive Valentine's Day experience disguised as a retro terminal interfac
 
 ## Project Overview
 
-Build a single-page React app that looks like a retro Linux terminal.
+A creative Valentine's Day web application that mimics a retro terminal interface. The app presents a playful conversation where the user is persistently asked a Valentine's question. Through an interactive unlock mechanism, the "Yes" button remains disabled until the user clicks "No" 10 times, triggering amusing terminal reactions and displaying emotional cat images along the way. Built with React and featuring smooth typewriter animations for an authentic terminal experience.
+
+**Key Features:**
+- Custom typewriter effect with character-by-character typing and natural pauses
+- Progressive conversation system with 10 unique response messages
+- Dynamic cat image system across 5 emotional categories (sad, fun, flower, happy, heart)
+- Startup screen with terminal boot experience
+- Fully responsive design optimized for mobile and desktop
+- Permission-based unlock mechanism with terminal-style error messages
 
 ## Core UX
 - The terminal prints messages with a typewriter animation (character-by-character).
@@ -40,3 +48,6 @@ Build a single-page React app that looks like a retro Linux terminal.
 - Keep it simple: single component is fine, but structure as a state machine (steps)
 - Auto-scroll terminal to the latest line
 - Style: monospace, dark terminal, blinking cursor
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
