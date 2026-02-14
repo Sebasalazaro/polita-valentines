@@ -8,6 +8,14 @@ import sad1 from "./assets/images/sad/sad-1.jfif";
 import funDumb from "./assets/images/fun/dumb.jfif";
 import funLoading from "./assets/images/fun/loading.jfif";
 import funThinking from "./assets/images/fun/thinking.jfif";
+import flowerAwkward from "./assets/images/flower/flower arkward.jfif";
+import flower from "./assets/images/flower/flower.jfif";
+import happyNice from "./assets/images/happy/nice.jfif";
+import happyYipeeee from "./assets/images/happy/yipeeee.jfif";
+import heartBeMyValentine from "./assets/images/heart/be my valentine!.jfif";
+import heart from "./assets/images/heart/heart.jfif";
+import heartie from "./assets/images/heart/heartie.jfif";
+import valentine from "./assets/images/heart/valentine.jfif";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -15,27 +23,52 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const sadCats = [sadCrying, sadCryingAss, sadCryingRiver, sad1];
 const funCats = [funDumb, funLoading, funThinking];
 
-// Get random cat from a category
-const getRandomCat = (category) => {
-  const cats = category === 'sad' ? sadCats : funCats;
+// Specific image mapping
+const specificImages = {
+  'heart': heart,
+  'flower awkard': flowerAwkward,
+  'flower awkward': flowerAwkward,
+  'flower': flower,
+  'be my valentine!': heartBeMyValentine,
+  'dumb': funDumb,
+  'loading': funLoading,
+  'thinking': funThinking,
+  'yipeeee': happyYipeeee,
+  'nice': happyNice,
+  'heartie': heartie,
+  'valentine': valentine,
+  'love': heartBeMyValentine,
+};
+
+// Get random cat from a category or specific image
+const getImage = (name) => {
+  const lowerName = name.toLowerCase();
+  
+  // Check if it's a specific image
+  if (specificImages[lowerName]) {
+    return specificImages[lowerName];
+  }
+  
+  // Otherwise, treat as category (sad/fun)
+  const cats = lowerName === 'sad' ? sadCats : funCats;
   return cats[Math.floor(Math.random() * cats.length)];
 };
 
 // Process lines and replace image markers with actual image URLs (stable, won't change on re-render)
 const processLinesWithImages = (lines) => {
   return lines.map(line => {
-    if (!line.includes('{{IMG:')) return { text: line, images: [] };
+    if (!line.includes('{{')) return { text: line, images: [] };
     
-    const parts = line.split(/({{IMG:(sad|fun)}})/g);
+    const parts = line.split(/({{[^}]+}})/g);
     const images = [];
     const processedParts = parts.map((part, idx) => {
-      const match = part.match(/{{IMG:(sad|fun)}}/);
+      const match = part.match(/{{([^}]+)}}/);
       if (match) {
-        const catImg = getRandomCat(match[1]);
+        const imageName = match[1].replace('IMG:', '').trim();
+        const catImg = getImage(imageName);
         images.push({ idx, src: catImg });
         return `{{IMG_${idx}}}`; // stable placeholder
       }
-      if (part === 'sad' || part === 'fun') return ''; // filter out captured groups
       return part;
     });
     return { text: processedParts.join(''), images };
@@ -197,9 +230,15 @@ export default function App() {
       "",
       "Me has hecho el hombre más feliz del mundo! {{heartie}}",
       "Te amo mucho Polita. Feliz día de San Valentín! {{valentine}}",
+      "",
       "Quedas cordialmente invitada a una cena conmigo el día de hoy, donde te prometo que disfrutaremos mucho del romance y de nuestro amor. {{love}}",
       "......",
-      "Espero que hayas disfrutado tu PolitaOS terminal."
+      "Espero que hayas disfrutado tu PolitaOS terminal.",
+      "...",
+      "...",
+      "...",
+      "...",
+      "Te amo Polita. Eres el amor de mi vida. Gracias por ser tú. :)",
     ],
     []
   );
