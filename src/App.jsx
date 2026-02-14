@@ -7,7 +7,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
  * - Feeds lines one by one into "printed"
  * - Each line is typed character-by-character
  */
-function useTerminalTyper({ charDelay = 18, lineDelay = 450 } = {}) {
+function useTerminalTyper({ charDelay = 250 , lineDelay = 8000 } = {}) {
   const [printed, setPrinted] = useState([]); // fully printed lines
   const [activeLine, setActiveLine] = useState(""); // currently typing
   const queueRef = useRef([]);
@@ -65,8 +65,8 @@ export default function App() {
   const bottomRef = useRef(null);
 
   const { printed, activeLine, enqueueLines, clear } = useTerminalTyper({
-    charDelay: 16,
-    lineDelay: 380,
+    charDelay: 50,
+    lineDelay: 800,
   });
 
   // Auto-scroll terminal
@@ -77,12 +77,14 @@ export default function App() {
   const introLines = useMemo(
     () => [
       "booting valentineOS v1.4.14...",
-      "checking system mood... ✅ romantic",
+      "checking system mood... ✅ romantic :hearts:",
       "initializing terminal...",
-      "",
-      "Hey darling. I hope you are doing well in this beautiful day.",
-      "I wrote you a tiny program because I'm cheesy like that.",
-      "",
+      "...",
+      "...",
+      "...",
+      "Hey my Poli-darling. I hope you are doing well in this beautiful day.",
+      "I wrote you this console because I want to know if....",
+      "...........",
       "Do you want to be my special valentine this year? 💘",
       "",
       "Choose wisely:",
@@ -95,7 +97,7 @@ export default function App() {
   const unlockLines = useMemo(
     () => [
       "",
-      "Oh shoot... lemme try something. I'm new to this Linux console.",
+      "Oh shoot... lemme try something. I'm new to this Linux stuff.",
       "chmod 400: love_letter.txt",
       "chmod 600: my_heart.dat",
       "sudo --askpass \"will you be my valentine?\"",
@@ -187,7 +189,7 @@ export default function App() {
             <span style={{ ...styles.dot, background: "#ffbd2e" }} />
             <span style={{ ...styles.dot, background: "#27c93f" }} />
           </div>
-          <div style={styles.title}>valentine-terminal</div>
+          <div style={styles.title}>polita-terminal</div>
           <button onClick={reset} style={styles.resetBtn} title="Restart">
             ↻
           </button>
@@ -221,14 +223,14 @@ export default function App() {
               ...(yesUnlocked && choice !== "yes" ? styles.btnYes : styles.btnDisabled),
             }}
           >
-            Yes 💖
+            Yes :D
           </button>
           <button
             onClick={onNo}
             disabled={choice === "yes"}
             style={{ ...styles.btn, ...styles.btnNo }}
           >
-            No 🙃
+            No :,(
           </button>
         </div>
 
