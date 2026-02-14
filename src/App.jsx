@@ -167,6 +167,7 @@ export default function App() {
   const disableYesInitially = true;
 
   // ---- UI STATE ----
+  const [started, setStarted] = useState(false);
   const [noClicks, setNoClicks] = useState(0);
   const [yesUnlocked, setYesUnlocked] = useState(!disableYesInitially);
   const [choice, setChoice] = useState(null); // "yes" | "no" | null
@@ -246,10 +247,12 @@ export default function App() {
 
   // Start intro typing once
   useEffect(() => {
-    clear();
-    enqueueLines(introLines);
+    if (started) {
+      clear();
+      enqueueLines(introLines);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [started]);
 
   const unlockYes = () => {
     if (yesUnlocked) return;
@@ -313,13 +316,37 @@ export default function App() {
     setStep("intro");
     setYesUnlocked(!disableYesInitially);
     setSkipMode(false); // reset skip mode on restart
+    setStarted(false); // back to start screen
     clear();
-    enqueueLines(introLines);
   };
 
   const toggleSkip = () => {
     setSkipMode(prev => !prev);
   };
+
+  const startTerminal = () => {
+    setStarted(true);
+  };
+
+  // Startup screen
+  if (!started) {
+    return (
+      <div style={styles.page}>
+        <div style={styles.startupCard}>
+          <div style={styles.startupContent}>
+            <h1 style={styles.startupTitle}>PolitaOS Terminal</h1>
+            <p style={styles.startupSubtitle}>v1.4.14</p>
+            <div style={styles.startupDivider} />
+            <p style={styles.startupMessage}>Sistema de PolitaShell iniciado...</p>
+            <p style={styles.startupMessage}>Esperando autorización de Polita...</p>
+            <button onClick={startTerminal} style={styles.startupBtn}>
+              Iniciar PolitaOS Terminal
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.page}>
@@ -493,6 +520,58 @@ const styles = {
     borderTop: "1px solid rgba(255,255,255,0.08)",
     fontSize: 12,
     opacity: 0.8,
+  },
+  startupCard: {
+    width: "min(600px, 90vw)",
+    borderRadius: 16,
+    overflow: "hidden",
+    boxShadow: "0 20px 80px rgba(0,0,0,0.55)",
+    border: "1px solid rgba(255,255,255,0.08)",
+    background: "rgba(10,12,18,0.9)",
+    backdropFilter: "blur(10px)",
+  },
+  startupContent: {
+    padding: "60px 40px",
+    textAlign: "center",
+  },
+  startupTitle: {
+    fontSize: 48,
+    fontWeight: 700,
+    margin: 0,
+    marginBottom: 10,
+    background: "linear-gradient(135deg, #ff468c 0%, #ff8a80 50%, #ffb3ba 100%)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    backgroundClip: "text",
+  },
+  startupSubtitle: {
+    fontSize: 18,
+    opacity: 0.6,
+    margin: 0,
+    marginBottom: 30,
+  },
+  startupDivider: {
+    height: 1,
+    background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)",
+    margin: "30px 0",
+  },
+  startupMessage: {
+    fontSize: 14,
+    opacity: 0.7,
+    margin: "10px 0",
+  },
+  startupBtn: {
+    marginTop: 40,
+    padding: "16px 40px",
+    fontSize: 18,
+    fontWeight: 700,
+    borderRadius: 14,
+    border: "1px solid rgba(255,255,255,0.15)",
+    background: "rgba(255, 70, 140, 0.25)",
+    color: "#e6e6e6",
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+    fontFamily: "inherit",
   },
 };
 
