@@ -38,8 +38,13 @@ function useTerminalTyper({ charDelay = 250 , lineDelay = 8000 } = {}) {
       setActiveLine("");
       for (let i = 0; i < next.length; i++) {
         setActiveLine((prev) => prev + next[i]);
-        await sleep(charDelay);
+        // Make dots type slower for suspense effect
+        const delay = next[i] === '.' ? charDelay * 6 : charDelay;
+        await sleep(delay);
       }
+
+      // Pause at the end of the line for more natural feel
+      await sleep(charDelay * 4);
 
       // commit line to printed
       setPrinted((prev) => [...prev, next]);
@@ -66,7 +71,7 @@ export default function App() {
 
   const { printed, activeLine, enqueueLines, clear } = useTerminalTyper({
     charDelay: 50,
-    lineDelay: 800,
+    lineDelay: 400,
   });
 
   // Auto-scroll terminal
@@ -77,7 +82,7 @@ export default function App() {
   const introLines = useMemo(
     () => [
       "booting valentineOS v1.4.14...",
-      "checking system mood... ✅ romantic :hearts:",
+      "checking system mood... ✅ romantic",
       "initializing terminal...",
       "...",
       "...",
@@ -88,7 +93,7 @@ export default function App() {
       "Do you want to be my special valentine this year? 💘",
       "",
       "Choose wisely:",
-      " - [Yes] (currently: permission denied)",
+      " - [Yes] [FATAL: PERMISSION_DENIED_0x403]",
       " - [No]",
     ],
     []
@@ -148,6 +153,7 @@ export default function App() {
 
       // Print a snarky line each time
       enqueueLines([
+        "",
         "",
         `> girlfriend_input: "No"`,
         `hmm... attempt ${next}/${NO_CLICKS_TO_UNLOCK}`,
