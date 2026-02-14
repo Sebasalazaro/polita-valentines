@@ -6,7 +6,7 @@ An interactive Valentine's Day experience disguised as a retro terminal interfac
 
 <br/>
 
-![Demo](./demo.gif)
+![Demo](./src/assets/gif/App-working.gif)
 
 <br/>
 
