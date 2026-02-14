@@ -358,6 +358,7 @@ export default function App() {
             <span style={{ ...styles.dot, background: "#27c93f" }} />
           </div>
           <div style={styles.title}>polita-terminal</div>
+          {/* Skip button - commented out for production
           <button 
             onClick={toggleSkip} 
             style={{
@@ -368,6 +369,7 @@ export default function App() {
           >
             {skipMode ? "⏩" : "▶️"}
           </button>
+          */}
           <button onClick={reset} style={styles.resetBtn} title="Restart">
             ↻
           </button>
